@@ -1,0 +1,35 @@
+## Docker - push image to ACR 
+
+
+#build image locally
+docker build -t rangersapp:latest .
+
+docker buildx build --platform linux/amd64 -t rangersacr.azurecr.io/rangersapp:latest .
+#login to ACR and push image to ACR
+az acr login --name rangersacr
+docker tag rangersapp:latest rangersacr.azurecr.io/rangersapp:latest
+docker push rangersacr.azurecr.io/rangersapp:latest
+
+
+
+
+
+
+
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+kubectl get pods
+kubectl get svc
+
+
+#get external ip 
+kubectl get svc rangersapp-service
+
+
+
+
+terraform output -raw kube_config > ~/.kube/rangersapp-config
+export KUBECONFIG=~/.kube/rangersapp-config
+
+kubectl get service rangersapp-service
+
