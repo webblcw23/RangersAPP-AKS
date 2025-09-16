@@ -4,6 +4,11 @@ output "kube_config" {
   sensitive = true
 }
 
+# This output makes the cluster's ID available.
+output "kubernetes_cluster_id" {
+  value = azurerm_kubernetes_cluster.aks_cluster.id
+}
+
 # Output for ACR
 output "acr_id" {
   value = azurerm_container_registry.acr.id
@@ -13,3 +18,6 @@ output "acr_login_server" {
   value = azurerm_container_registry.acr.login_server
 }
 
+output "kubelet_identity_object_id" {
+  value = data.azurerm_kubernetes_cluster.aks_cluster.kubelet_identity[0].object_id
+}

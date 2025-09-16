@@ -4,13 +4,18 @@
 #build image locally
 docker build -t rangersapp:latest .
 
-docker buildx build --platform linux/amd64 -t rangersacr.azurecr.io/rangersapp:latest .
+
+
+
+docker buildx create --use
+docker buildx build --platform linux/amd64 \
+  -t rangersacr.azurecr.io/rangersapp:latest \
+  --push .
+  
 #login to ACR and push image to ACR
 az acr login --name rangersacr
 docker tag rangersapp:latest rangersacr.azurecr.io/rangersapp:latest
 docker push rangersacr.azurecr.io/rangersapp:latest
-
-
 
 
 

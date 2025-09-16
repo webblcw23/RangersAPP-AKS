@@ -8,8 +8,8 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
 
   default_node_pool {
     name           = "prodpool"
-    node_count     = 2
-    vm_size        = "Standard_DS2_v2"
+    node_count     = 1
+    vm_size        = "Standard_B2s"
     vnet_subnet_id = var.aks_subnet_id
   }
 
@@ -21,7 +21,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
 
   network_profile {
     network_plugin     = "azure"
-    load_balancer_sku  = "standard"
+    load_balancer_sku  = "basic"
     outbound_type      = "loadBalancer"
   }
 
@@ -40,9 +40,31 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled            = false
 }
 
+
+# creates the data block to get the AKS cluster details
+data "azurerm_kubernetes_cluster" "aks_cluster" {
+  name                = azurerm_kubernetes_cluster.aks_cluster.name
+  resource_group_name = var.resource_group_name
+  depends_on          = [azurerm_kubernetes_cluster.aks_cluster]
+}
+
 # Assign the AcrPull role to the AKS cluster's managed identity
 resource "azurerm_role_assignment" "acr_pull" {
-  principal_id         = azurerm_kubernetes_cluster.aks_cluster.identity[0].principal_id
+  principal_id         = data.azurerm_kubernetes_cluster.aks_cluster.kubelet_identity[0].object_id
   role_definition_name = "AcrPull"
   scope                = azurerm_container_registry.acr.id
 }
+
+
+
+
+
+# Assign the AcrPull role to the AKS cluster's managed identity
+resource "azurerm_role_assignment" "acr_pull" {
+  principal_id         = azurerm_kubernetes_cluster.aks_cluster.kubelet
+  role_definition_name = "AcrPull"
+  scope                = azurerm_container_registry.acr.id
+
+  depends_on = [azurerm_kubernetes_cluster.aks_cluster]
+}
+
