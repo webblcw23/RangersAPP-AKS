@@ -1,0 +1,233 @@
+trigger: none
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  ACR_NAME: "rangersdockeracr"
+  IMAGE_NAME: "rangersapp"
+  DOCKER_REGISTRY: "$(ACR_NAME).azurecr.io"
+  IMAGE_TAG_DEV: "dev-001"
+  IMAGE_TAG_STAGING: "staging-001"
+  IMAGE_TAG_PROD: "prod-001"
+
+stages:
+  - stage: BuildAndScrape
+    displayName: "⚙️ Build App & Scrape Data"
+    jobs:
+      - job: BuildScrape
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.10"
+              addToPath: true
+
+          - script: |
+              python -m venv venv
+              source venv/bin/activate
+              pip install pandas
+              python Data/scrape_scores.py
+            displayName: "Scrape Latest Match Results"
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: "Data/rangers-results.json"
+              artifactName: "rangers-results"
+            displayName: "Publish Results JSON"
+
+  - stage: DockerPush
+    displayName: "🐳 Build & Push Docker Image"
+    dependsOn: BuildAndScrape
+    jobs:
+      - job: DockerBuild
+        steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              artifactName: "rangers-results"
+              downloadPath: "Data"
+
+          - script: mv Data/rangers-results/rangers-results.json Data/rangers-results.json
+            displayName: "Move JSON to Expected Path"
+
+          - task: Docker@2
+            displayName: "Build and Push Docker Image with Multiple Tags"
+            inputs:
+              containerRegistry: "rangers-docker-acr"  # ✅ ACR service connection
+              repository: "$(IMAGE_NAME)"
+              command: "buildAndPush"
+              Dockerfile: "Dockerfile"
+              buildContext: "."
+              tags: |
+                $(IMAGE_TAG_DEV)
+                $(IMAGE_TAG_STAGING)
+                $(IMAGE_TAG_PROD)
+
+  - stage: DeployDev
+    displayName: "🚀 Deploy to Dev AKS"
+    dependsOn: DockerPush
+    jobs:
+      - job: DeployToAKSDev
+        steps:
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: "1.7.5"
+
+          - task: AzureCLI@2
+            displayName: "Terraform Init"
+            inputs:
+              azureSubscription: "rangers-arm-service-connection"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                terraform init -reconfigure
+              workingDirectory: terraform/dev
+            env:
+              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+              ARM_TENANT_ID: $(ARM_TENANT_ID)
+
+          - script: |
+              terraform apply -auto-approve \
+              -var="client_id=$(ARM_CLIENT_ID)" \
+              -var="client_secret=$(ARM_CLIENT_SECRET)" \
+              -var="tenant_id=$(ARM_TENANT_ID)" \
+              -var="subscription_id=$(ARM_SUBSCRIPTION_ID)" \
+              -var="image_tag=$(IMAGE_TAG_DEV)"
+            workingDirectory: terraform/dev
+            displayName: "Terraform Apply"
+            env:
+              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+              ARM_TENANT_ID: $(ARM_TENANT_ID)
+
+          # ✅ NEW: Deploy to AKS using kubectl
+          - task: Kubernetes@1
+            displayName: "Apply Kubernetes Manifests to Dev AKS"
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscription: 'rangers-arm-service-connection'
+              azureResourceGroup: 'rg-rangers-aks'
+              kubernetesCluster: 'rangersapp-prod-aks'
+              command: apply
+              useConfigurationFile: true
+              configuration: |
+                k8s/deployment.yaml
+                k8s/service.yaml
+
+  - stage: DeployStaging
+    displayName: "🚦 Deploy to Staging AKS"
+    dependsOn: DeployDev
+    condition: succeeded()
+    jobs:
+      - job: DeployToAKSStaging
+        steps:
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: "1.7.5"
+
+          - task: AzureCLI@2
+            displayName: "Terraform Init"
+            inputs:
+              azureSubscription: "rangers-arm-service-connection"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                terraform init -reconfigure
+              workingDirectory: terraform/staging
+            env:
+              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+              ARM_TENANT_ID: $(ARM_TENANT_ID)
+
+          - script: |
+              terraform apply -auto-approve \
+              -var="client_id=$(ARM_CLIENT_ID)" \
+              -var="client_secret=$(ARM_CLIENT_SECRET)" \
+              -var="tenant_id=$(ARM_TENANT_ID)" \
+              -var="subscription_id=$(ARM_SUBSCRIPTION_ID)" \
+              -var="image_tag=$(IMAGE_TAG_STAGING)"
+            workingDirectory: terraform/staging
+            displayName: "Terraform Apply"
+            env:
+              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+              ARM_TENANT_ID: $(ARM_TENANT_ID)
+
+          # ✅ NEW: Deploy to AKS using kubectl
+          - task: Kubernetes@1
+            displayName: "Apply Kubernetes Manifests to Staging AKS"
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscription: 'rangers-arm-service-connection'
+              azureResourceGroup: 'rg-rangers-aks'
+              kubernetesCluster: 'rangersapp-prod-aks'
+              command: apply
+              useConfigurationFile: true
+              configuration: |
+                k8s/deployment.yaml
+                k8s/service.yaml
+
+  - stage: DeployProduction
+    displayName: "✅ Deploy to Production AKS"
+    dependsOn: DeployStaging
+    condition: succeeded()
+    jobs:
+      - deployment: DeployToAKSProd
+        environment: Production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: TerraformInstaller@1
+                  inputs:
+                    terraformVersion: "1.7.5"
+
+                - task: AzureCLI@2
+                  displayName: "Terraform Init"
+                  inputs:
+                    azureSubscription: "rangers-arm-service-connection"
+                    scriptType: "bash"
+                    scriptLocation: "inlineScript"
+                    inlineScript: |
+                      terraform init -reconfigure
+                    workingDirectory: terraform/prod
+                  env:
+                    ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                    ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                    ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                    ARM_TENANT_ID: $(ARM_TENANT_ID)
+
+                - script: |
+                    terraform apply -auto-approve \
+                    -var="client_id=$(ARM_CLIENT_ID)" \
+                    -var="client_secret=$(ARM_CLIENT_SECRET)" \
+                    -var="tenant_id=$(ARM_TENANT_ID)" \
+                    -var="subscription_id=$(ARM_SUBSCRIPTION_ID)" \
+                    -var="image_tag=$(IMAGE_TAG_PROD)"
+                  workingDirectory: terraform/prod
+                  displayName: "Terraform Apply"
+                  env:
+                    ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                    ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                    ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                    ARM_TENANT_ID: $(ARM_TENANT_ID)
+
+                # ✅ NEW: Deploy to AKS using kubectl
+                - task: Kubernetes@1
+                  displayName: "Apply Kubernetes Manifests to Prod AKS"
+                  inputs:
+                    connectionType: 'Azure Resource Manager'
+                    azureSubscription: 'rangers-arm-service-connection'
+                    azureResourceGroup: 'rg-rangers-aks'
+                    kubernetesCluster: 'rangersapp-prod-aks'
+                    command: apply
+                    useConfigurationFile: true
+                    configuration: |
+                      k8s/deployment.yaml
+                      k8s/service.yaml
