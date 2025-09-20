@@ -48,23 +48,20 @@ data "azurerm_kubernetes_cluster" "aks_cluster" {
   depends_on          = [azurerm_kubernetes_cluster.aks_cluster]
 }
 
+
 # Assign the AcrPull role to the AKS cluster's managed identity
 resource "azurerm_role_assignment" "acr_pull" {
-  principal_id         = data.azurerm_kubernetes_cluster.aks_cluster.kubelet_identity[0].object_id
+  principal_id         = azurerm_kubernetes_cluster.aks_cluster.kubelet_identity[0].object_id
   role_definition_name = "AcrPull"
   scope                = azurerm_container_registry.acr.id
+
+  depends_on = [
+    azurerm_kubernetes_cluster.aks_cluster,
+    azurerm_container_registry.acr
+  ]
 }
 
 
 
 
-
-# Assign the AcrPull role to the AKS cluster's managed identity
-resource "azurerm_role_assignment" "acr_pull" {
-  principal_id         = azurerm_kubernetes_cluster.aks_cluster.kubelet
-  role_definition_name = "AcrPull"
-  scope                = azurerm_container_registry.acr.id
-
-  depends_on = [azurerm_kubernetes_cluster.aks_cluster]
-}
 

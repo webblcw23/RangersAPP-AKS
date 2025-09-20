@@ -17,3 +17,9 @@ variable "subnet_prefixes" {
 variable "location" {}
 
 variable "resource_group_name" {}
+
+variable "aks_principal_id" {
+  description = "The AKS cluster's managed identity principal ID"
+  type        = string
+}
+

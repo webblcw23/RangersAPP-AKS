@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: rangersapp-service
   annotations:
-    service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /api/results/html
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /
 spec:
   type: LoadBalancer
   selector:

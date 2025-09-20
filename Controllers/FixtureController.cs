@@ -74,4 +74,10 @@ public class ResultsController : ControllerBase
 
         return Content(html, "text/html");
     }
+
+    [HttpHead("html")]
+    public IActionResult HeadHtmlResults()
+    {
+        return Ok(); // Satisfies Azure's health probe with 200 OK
+    }
 }

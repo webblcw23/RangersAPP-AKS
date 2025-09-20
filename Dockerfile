@@ -14,7 +14,7 @@ COPY --from=build /app/out ./
 # Copy your results file
 COPY Data/rangers-results.json /app/Data/rangers-results.json
 
-#ENV ASPNETCORE_URLS=http://+:80
+ENV ASPNETCORE_URLS=http://+:80
 
 
 EXPOSE 80

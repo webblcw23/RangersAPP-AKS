@@ -22,16 +22,17 @@ resource "azurerm_network_security_group" "rangers_nsg" {
   resource_group_name = var.resource_group_name
 
 security_rule {
-    name                       = "AllowHTTPS"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "443"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    }
+  name                       = "AllowHTTP"
+  priority                   = 110
+  direction                  = "Inbound"
+  access                     = "Allow"
+  protocol                   = "Tcp"
+  source_port_range          = "*"
+  destination_port_range     = "80"
+  source_address_prefix      = "*"
+  destination_address_prefix = "*"
+}
+
 }
 
 # NSG Association with Subnet
@@ -39,3 +40,13 @@ resource "azurerm_subnet_network_security_group_association" "aks_subnet_nsg" {
   subnet_id                 = azurerm_subnet.aks_subnet.id
   network_security_group_id = azurerm_network_security_group.rangers_nsg.id
 }
+
+
+resource "azurerm_role_assignment" "aks_subnet_join" {
+  scope                = azurerm_subnet.aks_subnet.id
+  role_definition_name = "Network Contributor"
+  principal_id = var.aks_principal_id
+  
+}
+
+

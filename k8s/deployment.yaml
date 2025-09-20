@@ -14,10 +14,8 @@ spec:
       labels:
         app: rangersapp
     spec:
-      imagePullSecrets:
-        - name: acr-auth
       containers:
         - name: rangersapp
-          image: rangersacr.azurecr.io/rangersapp:aksfix
+          image: rangersacr.azurecr.io/rangersapp:latest
           ports:
             - containerPort: 80
