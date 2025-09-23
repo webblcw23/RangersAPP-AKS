@@ -1,4 +1,4 @@
-📝 Rangers App – AKS with Automated Deployment Pipeline
+# 📝 Rangers App – AKS with Automated Deployment Pipeline
 ⚙️ Overview
 Building upon my previous Rangers App using a multi environment Web App project, this project automates the end-to-end deployment of the Rangers App using Azure DevOps, Docker, Terraform, and now... AKS. It scrapes match results, builds a containerized app, pushes it to Azure Container Registry, and deploys it to a production-grade AKS cluster.
 
