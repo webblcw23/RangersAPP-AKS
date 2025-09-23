@@ -1,1 +1,6 @@
 az devops service-endpoint delete --organization "https://dev.azure.com/webblcw23" --project "FootballScores" --id "2f6ab15e-7289-436c-8b78-6b27569a6fe0"
+
+
+TODODs
+
+rebuild ARM and ACR  service connections 
