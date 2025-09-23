@@ -94,6 +94,13 @@ stages:
               ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
               ARM_TENANT_ID: $(ARM_TENANT_ID)
 
+          - script: |
+              echo "Listing contents of k8s folder:"
+              ls -la k8s/
+              echo "Showing deployment.yaml contents:"
+              cat k8s/deployment.yaml
+            displayName: "Debug: Confirm k8s folder visibility"
+
           - task: Kubernetes@1
             displayName: "Apply Kubernetes Manifests to AKS"
             inputs:
