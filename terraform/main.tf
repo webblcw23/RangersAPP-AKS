@@ -62,6 +62,23 @@ depends_on = [azurerm_resource_group.rangers_aks_rg]
 }
 
 
+# Storage to store and manage my tfstate files
+resource "azurerm_storage_account" "tfstate" {
+  name                     = "rangerstfstate"
+  resource_group_name      = var.resource_group_name_prod
+  location                 = "uksouth"
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+resource "azurerm_storage_container" "tfstate" {
+  name                  = "tfstate"
+  storage_account_id = azurerm_storage_account.tfstate.id
+  container_access_type = "private"
+}
+
+
+
 
 
 

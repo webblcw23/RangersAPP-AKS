@@ -20,6 +20,10 @@ docker buildx build \
 kubectl apply -f deployment.yaml
 kubectl apply -f service.yaml
 
+# 3.5 If above errors, you may need to authenticate to AKS cluster
+az aks get-credentials --resource-group rg-rangers-aks --name rangersapp-prod-aks
+
+
 
 # 4. check pods are running status and then check external IP for web app running ok via pods
 kubectl get pods
