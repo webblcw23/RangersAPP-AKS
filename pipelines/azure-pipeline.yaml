@@ -58,6 +58,30 @@ stages:
               Dockerfile: "Dockerfile"
               buildContext: "."
 
+
+          - script: |
+              docker build -t $(DOCKER_REGISTRY)/$(IMAGE_NAME)-dev:$(IMAGE_TAG_DEV) -f Dockerfile.dev .
+              docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME)-dev:$(IMAGE_TAG_DEV)
+            displayName: "Build & Push Dev Image"
+
+          - task: AzureCLI@2
+            displayName: "Restart Dev Web App with New Image"
+            inputs:
+              azureSubscription: 'rangers-arm-service-connection'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az webapp config container set \
+                  --name rangersapp-dev \
+                  --resource-group rg-rangers-dev \
+                  --docker-custom-image-name $(DOCKER_REGISTRY)/$(IMAGE_NAME)-dev:$(IMAGE_TAG_DEV) \
+                  --docker-registry-server-url https://$(DOCKER_REGISTRY)
+
+                az webapp restart \
+                  --name rangersapp-dev \
+                  --resource-group rg-rangers-dev
+             
+
   - stage: DeployToAKS
     displayName: "✅ Deploy to AKS"
     dependsOn: DockerPush
