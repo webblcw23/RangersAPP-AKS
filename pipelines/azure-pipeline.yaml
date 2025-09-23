@@ -101,17 +101,16 @@ stages:
               cat k8s/deployment.yaml
             displayName: "Debug: Confirm k8s folder visibility"
 
-          - task: Kubernetes@1
-            displayName: "Apply Kubernetes Manifests to AKS"
+          - task: AzureCLI@2
+            displayName: "Apply Kubernetes Manifests via kubectl"
             inputs:
-              connectionType: 'Kubernetes Service Connection'
-              kubernetesServiceEndpoint: 'rangers-aks-service-connection'
-              command: apply
-              useConfigurationFile: true
-              configuration: |
-                k8s/deployment.yaml
-                k8s/service.yaml
-
+              azureSubscription: 'rangers-arm-service-connection'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az aks get-credentials --resource-group rg-rangers-aks --name rangersapp-prod-aks --overwrite-existing
+                kubectl apply -f k8s/deployment.yaml
+                kubectl apply -f k8s/service.yaml
 
           - script: |
               echo "Fetching external IP for Rangers app..."
