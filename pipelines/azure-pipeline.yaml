@@ -98,7 +98,7 @@ stages:
             displayName: "Apply Kubernetes Manifests to AKS"
             inputs:
               connectionType: 'Azure Resource Manager'
-              # azureSubscription: 'rangers-arm-service-connection'
+              kubernetesServiceEndpoint: 'rangers-aks-service-connection'
               azureResourceGroup: 'rg-rangers-aks'
               kubernetesCluster: 'rangersapp-prod-aks'
               command: apply
