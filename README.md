@@ -61,6 +61,8 @@ Platform ownership means knowing when to drop the abstraction
 
 🎯 Next Steps
 
+Addition of Secure HTTPS to AKS cluster
+
 Monitor service health and autoscaling
 
 Note: No current need for Key Vault but a mock secret could be created to demonstrate know-how

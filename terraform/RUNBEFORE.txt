@@ -1,0 +1,16 @@
+# ⚠️ Make sure the storage account and container exist before running terraform init
+
+# Create the resource group
+az group create --name rg-rangers-aks --location uksouth
+
+# Create the storage account
+az storage account create \
+  --name rangerstfstate \
+  --resource-group rg-rangers-aks \
+  --location uksouth \
+  --sku Standard_LRS
+
+# Create the blob container for state files
+az storage container create \
+  --name tfstate \
+  --account-name rangerstfstate
