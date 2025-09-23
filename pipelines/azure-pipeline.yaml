@@ -99,8 +99,6 @@ stages:
             inputs:
               connectionType: 'Kubernetes Service Connection'
               kubernetesServiceEndpoint: 'rangers-aks-service-connection'
-              azureResourceGroup: 'rg-rangers-aks'
-              kubernetesCluster: 'rangersapp-prod-aks'
               command: apply
               useConfigurationFile: true
               configuration: |
