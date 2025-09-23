@@ -1,26 +1,29 @@
 ## Docker - push image to ACR 
 
   
-#login to ACR and push image to ACR
+# Once Terraform infra has been deployed. Build and Push ACR. follow below steps.
+
+# 1.login to ACR and push image to ACR
 az acr login --name rangersacr
 
 
-# build using am64 image and tags with latest 
+# 2. build using am64 image and tags with latest 
 
 docker buildx build \
   --platform linux/amd64 \
   -t rangersacr.azurecr.io/rangersapp:latest \
   --push .
 
-
-
-
+ 
+# 3. apply the k8s files for deployment and service.
 
 kubectl apply -f deployment.yaml
 kubectl apply -f service.yaml
+
+
+# 4. check pods are running status and then check external IP for web app running ok via pods
 kubectl get pods
 kubectl get svc
-
 
 #get external ip 
 kubectl get svc rangersapp-service

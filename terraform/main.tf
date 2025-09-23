@@ -4,9 +4,15 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
-# resource group
+# resource group for Prod AKS Env
 resource "azurerm_resource_group" "rangers_aks_rg" {
-  name     = var.resource_group_name
+  name     = var.resource_group_name_prod
+  location = var.location
+}
+
+# resource group for Dev Web App Env 
+resource "azurerm_resource_group" "rangers_webapp_dev_rg" {
+  name     = var.resource_group_name_dev
   location = var.location
 }
 
@@ -14,7 +20,7 @@ resource "azurerm_resource_group" "rangers_aks_rg" {
 module "network" {
   source              = "./modules/network"
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resource_group_name_prod
   vnet_name           = "rangersapp-vnet"
   subnet_name         = "rangersapp-subnet"
   nsg_name            = "rangersapp-nsg"
@@ -26,7 +32,7 @@ module "network" {
 module "aks" {
   source              = "./modules/aks"
     location            = var.location
-    resource_group_name = var.resource_group_name
+    resource_group_name = var.resource_group_name_prod
     dns_prefix          = "rangersapp-prod"
     node_count          = 2
     vm_size             = "Standard_DS2_v2"
@@ -35,12 +41,27 @@ module "aks" {
     acr_name            = var.acr_name
 }
 
+module "dev_webapp" {
+  source                  = "./modules/dev_webapp"
+    location                = var.location
+    resource_group_name     = var.resource_group_name_dev
+    image_name              = var.image_name
+    image_tag               = var.image_tag
+    acr_login_server        = module.aks.acr_login_server
+
+}
+
+
 # To allow for the web app restart
 resource "azurerm_role_assignment" "webapp_rbac" {
-  principal_id         = "d0d5257b-bb1a-4272-b552-98a508458f5f" # Service Principle object ID used in ADO as service connection - 
+  principal_id         = var.service_principal_id # Service Principle object ID used in ADO as service connection - 
   role_definition_name = "Contributor"
   scope                = "/subscriptions/91c0fe80-4528-4bf2-9796-5d0f2a250518/resourceGroups/rg-rangers-aks"
 
 depends_on = [azurerm_resource_group.rangers_aks_rg]
 }
+
+
+
+
 

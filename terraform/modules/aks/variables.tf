@@ -25,3 +25,6 @@ variable "aks_subnet_id" {}
 # ACR Variable
 variable "acr_name" {}
 
+
+
+
