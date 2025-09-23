@@ -97,7 +97,7 @@ stages:
           - task: Kubernetes@1
             displayName: "Apply Kubernetes Manifests to AKS"
             inputs:
-              connectionType: 'Azure Resource Manager'
+              connectionType: 'Kubernetes Service Connection'
               kubernetesServiceEndpoint: 'rangers-aks-service-connection'
               azureResourceGroup: 'rg-rangers-aks'
               kubernetesCluster: 'rangersapp-prod-aks'
