@@ -4,6 +4,9 @@ Building upon my previous Rangers App using a multi environment Web App project,
 
 I created this AKS-based version of RangersApp to deepen my understanding of container orchestration, Terraform lifecycle management, and secure CI/CD deployment on Kubernetes. It builds on my Web App project by introducing production-grade AKS infrastructure and declarative manifest application.
 
+<img width="843" height="526" alt="Rangers-AKS drawio" src="https://github.com/user-attachments/assets/426bc55f-258a-4c50-b7a7-2ad41f7fd62f" />
+
+
 Python Scraper → Docker Image → ACR → AKS (via Terraform + Manifests)
 Azure DevOps → CI/CD Pipeline → AKS Deployment
 
