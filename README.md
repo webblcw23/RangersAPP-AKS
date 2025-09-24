@@ -2,6 +2,11 @@
 ⚙️ Overview
 Building upon my previous Rangers App using a multi environment Web App project, this project automates the end-to-end deployment of the Rangers App using Azure DevOps, Docker, Terraform, and now... AKS. It scrapes match results, builds a containerized app, pushes it to Azure Container Registry, and deploys it to a production-grade AKS cluster.
 
+I created this AKS-based version of RangersApp to deepen my understanding of container orchestration, Terraform lifecycle management, and secure CI/CD deployment on Kubernetes. It builds on my Web App project by introducing production-grade AKS infrastructure and declarative manifest application.
+
+Python Scraper → Docker Image → ACR → AKS (via Terraform + Manifests)
+Azure DevOps → CI/CD Pipeline → AKS Deployment
+
 
 🚀 Tech Stack
 Azure DevOps Pipelines – CI/CD orchestration
@@ -50,14 +55,10 @@ Secrets injected via environment variables
 
 No hardcoded credentials
 
-📈 Lessons Learned
-YAML path sensitivity in Azure Pipelines
+📈 Platform Insights
 
 Kubernetes task quirks and CLI fallback
 
-Importance of debug steps for agent visibility
-
-Platform ownership means knowing when to drop the abstraction
 
 🎯 Next Steps
 
