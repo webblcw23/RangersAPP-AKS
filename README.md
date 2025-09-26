@@ -61,6 +61,12 @@ No hardcoded credentials
 📈 Platform Insights
 
 Kubernetes task quirks and CLI fallback
+<img width="1428" height="623" alt="Screenshot 2025-09-20 at 05 00 35" src="https://github.com/user-attachments/assets/439d3fc2-1c9d-47cd-b421-1776503a7875" />
+<img width="1408" height="527" alt="Screenshot 2025-09-02 at 20 38 27" src="https://github.com/user-attachments/assets/a46fb9fa-d258-4644-886d-6640c87d828d" />
+
+
+
+
 
 
 🎯 Next Steps
