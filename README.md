@@ -1,8 +1,8 @@
 # 📝 Football Results App – AKS with Automated Deployment Pipeline
 ⚙️ Overview
-Building upon my previous Rangers App using a multi environment Web App project, this project automates the end-to-end deployment of the Rangers App using Azure DevOps, Docker, Terraform, and now... AKS. It scrapes match results, builds a containerized app, pushes it to Azure Container Registry, and deploys it to a production-grade AKS cluster.
+Building upon my previous Football Results App using a multi environment Web App project, this project automates the end-to-end deployment of the Football Results App using Azure DevOps, Docker, Terraform, and now... AKS. It scrapes match results, builds a containerized app, pushes it to Azure Container Registry, and deploys it to a production-grade AKS cluster.
 
-I created this AKS-based version of RangersApp to deepen my understanding of container orchestration, Terraform lifecycle management, and secure CI/CD deployment on Kubernetes. It builds on my Web App project by introducing production-grade AKS infrastructure and declarative manifest application.
+I created this AKS-based version of Football Results App to deepen my understanding of container orchestration, Terraform lifecycle management, and secure CI/CD deployment on Kubernetes. It builds on my Web App project by introducing production-grade AKS infrastructure and declarative manifest application.
 
 <img width="843" height="526" alt="Rangers-AKS drawio" src="https://github.com/user-attachments/assets/426bc55f-258a-4c50-b7a7-2ad41f7fd62f" />
 
